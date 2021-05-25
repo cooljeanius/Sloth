@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2020, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -32,6 +32,7 @@
 #import "InfoPanelController.h"
 #import "Common.h"
 #import "IPUtils.h"
+#import "IconUtils.h"
 #import "ProcessUtils.h"
 #import "NSWorkspace+Additions.h"
 #import "Item.h"
@@ -63,6 +64,7 @@
 @property (weak) IBOutlet NSButton *killButton;
 @property (weak) IBOutlet NSButton *showInFinderButton;
 @property (weak) IBOutlet NSButton *getFinderInfoButton;
+@property (weak) IBOutlet NSButton *showPackageContentsButton;
 
 @property (assign, nonatomic) NSString *path;
 @property (assign, nonatomic) NSDictionary *fileInfoDict;
@@ -238,7 +240,13 @@
     // Buttons
     BOOL workablePath = [FILEMGR fileExistsAtPath:path] && (isFileOrFolder || isProcess);
     [self.showInFinderButton setEnabled:workablePath];
-    [self.getFinderInfoButton setEnabled:workablePath];    
+    [self.getFinderInfoButton setEnabled:workablePath];
+    [self.showPackageContentsButton setHidden:![item[@"bundle"] boolValue]];
+    if ([self.showPackageContentsButton image] == nil) {
+        NSImage *img = [IconUtils imageNamed:@"SmallDirectory"];
+        [img setSize:NSMakeSize(10.f,10.f)];
+        [self.showPackageContentsButton setImage:img];
+    }
 }
 
 #pragma mark - Get file info
@@ -508,6 +516,11 @@
 
 - (IBAction)showInFinder:(id)sender {
     [[NSApp delegate] performSelector:@selector(revealItemInFinder:) withObject:self.fileInfoDict];
+}
+
+- (IBAction)showPackageContents:(id)sender {
+    NSString *path = self.fileInfoDict[@"path"] ? self.fileInfoDict[@"path"] : self.fileInfoDict[@"name"];
+    [WORKSPACE showPackageContents:path];
 }
 
 - (IBAction)killProcess:(id)sender {

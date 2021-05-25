@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2020, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -41,6 +41,7 @@
 #define APPL_ICON_PATH      CORE_TYPES_RESOURCE(@"SidebarApplicationsFolder.icns")
 #define HOME_ICON_PATH      CORE_TYPES_RESOURCE(@"SidebarHomeFolder.icns")
 #define ERR_ICON_PATH       CORE_TYPES_RESOURCE(@"AlertStopIcon.icns")
+#define QUESTION_ICON_PATH  CORE_TYPES_RESOURCE(@"GenericQuestionMarkIcon.icns")
 
 static NSMutableDictionary *iconStore;
 
@@ -62,6 +63,10 @@ static NSMutableDictionary *iconStore;
             @{ @"name": @"NSGenericDocument", @"template": @NO }
         ],
         @"Directory": @[
+            @{ @"path": FOLDER_ICON_PATH, @"template": @YES },
+            @{ @"name": NSImageNameFolder, @"template": @NO }
+        ],
+        @"SmallDirectory": @[
             @{ @"path": FOLDER_ICON_PATH, @"template": @YES },
             @{ @"name": NSImageNameFolder, @"template": @NO }
         ],
@@ -105,6 +110,11 @@ static NSMutableDictionary *iconStore;
         ],
         @"Unlocked": @[
             @{ @"type": NSFileTypeForHFSTypeCode(kUnlockedIcon), @"template": @NO }
+        ],
+        // TODO:: Add fallback local icon
+        @"QustionMark": @[
+            @{ @"path": QUESTION_ICON_PATH
+            }
         ]
     };
     

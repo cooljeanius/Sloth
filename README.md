@@ -1,14 +1,14 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Language](https://img.shields.io/badge/language-objective--c-lightgrey)]()
-[![Build Status](https://travis-ci.com/sveinbjornt/Sloth.svg?branch=master)](https://travis-ci.com/sveinbjornt/Sloth) 
+[![Build](https://github.com/sveinbjornt/sloth/actions/workflows/macos.yml/badge.svg)]()
 
 # Sloth
 
 <img src="resources/sloth_icon.png" width="192" height="192" align="right" style="float: right; margin-left: 30px;">
 
-**Sloth** is a native Mac app that shows all open files, directories, sockets, pipes and devices in use by all running processes on your system. This makes it easy to inspect which apps are using which files, etc.
+**Sloth** is a native Mac app that shows all open files, directories, sockets, pipes, and devices in use by all running processes on your system. This makes it easy to inspect which apps are using which files, etc.
 
-* View all open files, directories, IP sockets, devices, Unix domain sockets and pipes
+* View all open files, directories, IP sockets, devices, Unix domain sockets, and pipes
 * Filter by name, access mode, volume, type, location, or using regular expressions
 * Sort by process name, file count, type, process ID, user ID, Carbon PSN, bundle UTI, etc.
 * View IP socket status, protocol, port and version
@@ -27,13 +27,16 @@ Sloth is essentially a friendly, exploratory graphical user interface built on t
 Sloth is free, open source software and has been continuously developed and maintained for a very long time (since 2004).
 **If you find this program useful, please [make a donation](https://sveinbjorn.org/donations).**
 
-*  **[⇩ Download Sloth 3.0.1](https://sveinbjorn.org/files/software/sloth.zip)** (~1.1 MB, Universal ARM/Intel 64-bit, macOS 10.9 or later)
+*  **[⇩ Download Sloth 3.1](https://sveinbjorn.org/files/software/sloth.zip)** (~1.2 MB, Universal ARM/Intel 64-bit, macOS 10.9 or later)
 
 Sloth can also be installed via [Homebrew](https://brew.sh) (may not be latest version):
 
 ```shell
-$ brew cask install sloth
+$ brew install --cask sloth
 ```
+
+Old versions supporting macOS 10.8 and earlier can be downloaded [here](https://sveinbjorn.org/files/software/sloth/).
+
 
 ## Screenshots
 
@@ -66,6 +69,13 @@ make
 Built products are created in `products/`.
 
 ## Version history
+
+### 18/03/2021 - Version 3.1
+
+* Configurable refresh interval
+* Default (regex) filters can be set in Preferences
+* Fixed filtering by volume on Catalina and Big Sur
+* Various minor bug fixes and interface improvements
 
 ### 26/11/2020 - Version 3.0.1
 
@@ -246,7 +256,7 @@ Built products are created in `products/`.
 
 ## BSD License 
 
-Copyright (C) 2004-2020 Sveinbjorn Thordarson &lt;<a href="mailto:">sveinbjorn@sveinbjorn.org</a>&gt;
+Copyright (C) 2004-2021 Sveinbjorn Thordarson &lt;<a href="mailto:">sveinbjorn@sveinbjorn.org</a>&gt;
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:

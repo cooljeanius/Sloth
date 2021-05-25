@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2020, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -94,6 +94,7 @@
     *numFiles = 0;
     
     if (![outputString length]) {
+        DLog(@"Empty lsof output!");
         return processList;
     }
     
@@ -219,7 +220,7 @@
                     currentFile[@"type"] = @"Pipe";
                 }
                 else {
-                    DLog(@"Unrecognized file type: %@ : %@", ftype, [currentFile description]);
+                    //DLog(@"Unrecognized file type: %@ : %@", ftype, [currentFile description]);
                     skip = TRUE;
                 }
                 
@@ -246,6 +247,10 @@
                 
                 if ([value hasSuffix:@"Operation not permitted"]) {
                     currentFile[@"type"] = @"Error";
+                    currentFile[@"image"] = [IconUtils imageNamed:@"Error"];
+                }
+                
+                if ([currentFile[@"name"] hasPrefix:@"unknown file type:"]) {
                     currentFile[@"image"] = [IconUtils imageNamed:@"Error"];
                 }
             }
@@ -326,7 +331,7 @@
             
             // If we know which process owns the other end of the pipe/socket
             // Needs to run with root privileges for succesful lookup of the
-            // endpoints of system process pipes/sockets such as syslogd
+            // endpoints of system process pipes/sockets such as syslogd.
             if (devCharCodeMap[name]) {
                 NSArray *endPoints = devCharCodeMap[name];
                 NSMutableArray *epItems = [NSMutableArray new];

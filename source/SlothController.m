@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2020, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -52,6 +52,7 @@
     IBOutlet NSMenu *accessModeSubmenu;
     IBOutlet NSMenu *filterMenu;
     IBOutlet NSMenu *openWithMenu;
+    IBOutlet NSMenu *refreshIntervalMenu;
     
     IBOutlet NSPopUpButton *volumesPopupButton;
     IBOutlet NSMenuItem *volumesMenuItem;
@@ -69,6 +70,7 @@
     IBOutlet NSMenuItem *authenticateMenuItem;
     
     IBOutlet NSButton *refreshButton;
+    IBOutlet NSMenuItem *refreshIntervalMenuItem;
     IBOutlet NSButton *disclosureButton;
     IBOutlet NSTextField *disclosureTextField;
     
@@ -79,6 +81,7 @@
     BOOL isRefreshing;
     
     NSTimer *filterTimer;
+    NSTimer *updateTimer;
     
     InfoPanelController *infoPanelController;
     PrefsController *prefsController;
@@ -129,16 +132,18 @@
         [authenticateMenuItem setAction:nil];
     }
     
-    // Volumes filter menu is available in both menu bar and popup button
+    // These menus are available in both menu bar and popup button.
+    // Why create two identical menus when the same one can be used?
     [volumesMenuItem setSubmenu:[volumesPopupButton menu]];
+    [refreshIntervalMenuItem setSubmenu:refreshIntervalMenu];
     
     // Set reveal button icon
     NSImage *revealImg = [NSImage imageNamed:@"NSRevealFreestandingTemplate"];
     [revealImg setSize:NSMakeSize(12,12)];
     [revealButton setImage:revealImg];
     
-    // For some reason, Interface Builder isn't respecting
-    // template settings so we have to do this manually...
+    // For some reason, Interface Builder isn't respecting image
+    // template settings so we have to do this manually... (sigh)
     [[NSImage imageNamed:@"Kill"] setTemplate:YES];
     [[NSImage imageNamed:@"Kill"] setSize:NSMakeSize(20, 20)];
     [[NSImage imageNamed:@"Info"] setTemplate:YES];
@@ -151,7 +156,12 @@
     
     // Set icons for items in Filter menu
     NSArray<NSMenuItem *> *items = [filterMenu itemArray];
+    int idx = 0;
     for (NSMenuItem *i in items) {
+        idx += 1;
+        if (idx < 2) { // Skip first menu item (Show All)
+            continue;
+        }
         NSString *type = [i toolTip];
         if (type) {
             NSImage *img = [IconUtils imageNamed:type];
@@ -171,7 +181,9 @@
                             @"accessMode",
                             @"interfaceSize",
                             @"searchFilterCaseSensitive",
-                            @"searchFilterRegex"]) {
+                            @"searchFilterRegex",
+                            @"updateInterval"
+                          ]) {
         [[NSUserDefaultsController sharedUserDefaultsController] addObserver:self
                                                                   forKeyPath:VALUES_KEYPATH(key)
                                                                      options:NSKeyValueObservingOptionNew
@@ -191,6 +203,15 @@
         // Refresh immediately when app is launched
         [self refresh:self];
     }
+    [self setUpdateTimerFromDefaults];
+}
+
+- (nullable NSMenu *)applicationDockMenu:(NSApplication *)sender {
+    NSMenu *menu = [NSMenu new];
+    NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"Refresh" action:@selector(refresh:) keyEquivalent:@""];
+    [item setTarget:self];
+    [menu addItem:item];
+    return menu;
 }
 
 - (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu {
@@ -211,8 +232,11 @@
 #pragma mark - Run lsof task
 
 - (IBAction)refresh:(id)sender {
+    if (isRefreshing) {
+        return;
+    }
     isRefreshing = YES;
-    [numItemsTextField setStringValue:@""];
+    [numItemsTextField setStringValue:@"Refreshing..."];
     [outlineView deselectAll:self];
     
     // Disable controls
@@ -254,10 +278,30 @@
     });
 }
 
+- (void)setUpdateTimerFromDefaults {
+    if (updateTimer) {
+        [updateTimer invalidate];
+        updateTimer = nil;
+    }
+    NSInteger secInterval = [DEFAULTS integerForKey:@"updateInterval"];
+    if (secInterval == 0) { // Manual updates only
+        return;
+    }
+    updateTimer = [NSTimer scheduledTimerWithTimeInterval:secInterval
+                                                   target:self
+                                                 selector:@selector(refresh:)
+                                                 userInfo:nil
+                                                  repeats:YES];
+}
+
 #pragma mark - Filtering
 
 - (void)updateProcessCountHeader {
-    NSString *headerTitle = [NSString stringWithFormat:@"%d processes - sorted by %@", (int)[self.content count], [DEFAULTS stringForKey:@"sortBy"]];
+    NSString *sortedBy = [DEFAULTS stringForKey:@"sortBy"];
+    if ([sortedBy hasSuffix:@" id"]) {
+        sortedBy = [NSString stringWithFormat:@"%@ID", [sortedBy substringToIndex:[sortedBy length]-2]];
+    }
+    NSString *headerTitle = [NSString stringWithFormat:@"%d processes - sorted by %@", (int)[self.content count], sortedBy];
     [[[outlineView tableColumnWithIdentifier:@"children"] headerCell] setStringValue:headerTitle];
 }
 
@@ -299,6 +343,16 @@
 
 // VolumesPopUpDelegate
 - (void)volumeSelectionChanged:(NSString *)volumePath {
+    // If can't do volume filtering on 10.15+
+//    if (@available(macOS 10.15, *)) {
+//        if ([[volumesPopupButton titleOfSelectedItem] isEqualToString:@"All"]) {
+//            return;
+//        }
+//        [volumesPopupButton selectItemAtIndex:0];
+//        [Alerts alert:@"Unable to filter by volume"
+//        subTextFormat:@"Volume filtering is not available on this version of macOS."];
+//        return;
+//    }
     [self performSelector:@selector(updateFiltering) withObject:nil afterDelay:0.05];
 }
 
@@ -306,6 +360,10 @@
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if ([VALUES_KEYPATH(@"interfaceSize") isEqualToString:keyPath]) {
         [outlineView reloadData];
+        return;
+    }
+    if ([VALUES_KEYPATH(@"updateInterval") isEqualToString:keyPath]) {
+        [self setUpdateTimerFromDefaults];
         return;
     }
     // The default that changed was one of the filters
@@ -350,11 +408,11 @@
     // User home dir path prefix
     NSString *homeDirPath = NSHomeDirectory();
     
-    // Search field filter
-    NSMutableArray *searchFilters = [NSMutableArray array];
+    // Search field filter, precompile regexes
+    NSMutableArray *searchFilters = [NSMutableArray new];
     NSString *fieldString = [[filterTextField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     NSArray *filterStrings = [fieldString componentsSeparatedByString:@" "];
-    // Trim and create regex objects from filter strings
+    // Trim and create regex objects from search filter strings
     for (NSString *fs in filterStrings) {
         NSString *s = [fs stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
         if ([s length] == 0) {
@@ -368,7 +426,7 @@
                                                                                    options:options
                                                                                      error:&err];
             if (!regex) {
-                DLog(@"Error creating regex: %@", [err localizedDescription]);
+                DLog(@"Error creating search filter regex: %@", [err localizedDescription]);
                 continue;
             }
             [searchFilters addObject:regex];
@@ -377,7 +435,30 @@
         }
     }
     
+    // Filters set in Prefs, precompile regexes
+    NSMutableArray *prefsFilters = [NSMutableArray new];
+    NSArray *pfStrings = [DEFAULTS objectForKey:@"filters"];
+    for (NSArray *ps in pfStrings) {
+        if ([ps[0] boolValue] == NO) {
+            continue;
+        }
+        NSString *s = [ps[1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        if ([s length] == 0) {
+            continue;
+        }
+        NSError *err;
+        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:s options:0 error:&err];
+        if (!regex) {
+            DLog(@"Error creating prefs filter regex: %@", [err localizedDescription]);
+            continue;
+        }
+        [prefsFilters addObject:regex];
+        DLog(@"Adding regex: %@", ps[1]);
+    }
+    
+    
     BOOL hasSearchFilter = ([searchFilters count] > 0);
+    BOOL hasPrefsFilter = ([prefsFilters count] > 0);
     BOOL showAllProcessTypes = !showApplicationsOnly;
     BOOL showAllItemTypes = (showRegularFiles &&
                              showDirectories &&
@@ -390,7 +471,7 @@
     
     // Minor optimization: If there is no filtering, just return
     // unfiltered content instead of iterating over all items
-    if (showAllItemTypes && showAllProcessTypes && !hasSearchFilter && !hasAccessModeFilter) {
+    if (showAllItemTypes && showAllProcessTypes && !hasSearchFilter && !hasPrefsFilter && !hasAccessModeFilter) {
         *matchingFilesCount = self.totalFileCount;
         return unfilteredContent;
     }
@@ -412,6 +493,7 @@
                 }
                 
                 if (volumesFilter) {
+//                    DLog(@"%@ cmp %@", file[@"device"][@"devid"], volumesFilter);
                     if ([file[@"device"][@"devid"] isEqualToNumber:volumesFilter] == NO) {
                         continue;
                     }
@@ -483,6 +565,20 @@
                 }
             }
             
+            // Prefs filters only filter by name
+            if (hasPrefsFilter) {
+                // Skip any file w. name matching
+                BOOL skip = NO;
+                for (NSRegularExpression *regex in prefsFilters) {
+                    if ([file[@"name"] isMatchedByRegex:regex]) {
+                        skip = YES;
+                    }
+                }
+                if (skip) {
+                    continue;
+                }
+            }
+            
             [matchingFiles addObject:file];
         }
         
@@ -498,6 +594,25 @@
     }
     
     return filteredContent;
+}
+
+- (IBAction)showAll:(id)sender {
+    [DEFAULTS setObject:@YES forKey:@"showRegularFiles"];
+    [DEFAULTS setObject:@YES forKey:@"showDirectories"];
+    [DEFAULTS setObject:@YES forKey:@"showCharacterDevices"];
+    [DEFAULTS setObject:@YES forKey:@"showIPSockets"];
+    [DEFAULTS setObject:@YES forKey:@"showPipes"];
+    [DEFAULTS setObject:@YES forKey:@"showUnixSockets"];
+    
+    [DEFAULTS setObject:@NO forKey:@"showApplicationsOnly"];
+    [DEFAULTS setObject:@NO forKey:@"showHomeFolderOnly"];
+    
+    [DEFAULTS setObject:@"Any" forKey:@"accessMode"];
+    [filterTextField setStringValue:@""];
+    [volumesPopupButton selectItemAtIndex:0];
+    
+    [DEFAULTS synchronize];
+    [self updateFiltering];
 }
 
 #pragma mark - Interface actions
@@ -811,6 +926,7 @@
                 NSBeep();
                 DLog(@"Authentication failed: %d", err);
             }
+            [self deauthenticate];
             return;
         }
     } else {

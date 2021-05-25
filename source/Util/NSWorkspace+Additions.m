@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2003-2017, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2003-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -247,7 +247,12 @@ end tell", path];
 }
 
 - (BOOL)showPackageContents:(NSString *)path {
-    if (!path || ![self isFilePackageAtPath:path]) {
+    if (!path) {
+        return NO;
+    }
+    BOOL isDir;
+    BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
+    if (!exists || !isDir || ![self isFilePackageAtPath:path]) {
         return NO;
     }
     NSString *contentsPath = [path stringByAppendingString:@"/Contents"];

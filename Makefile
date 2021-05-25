@@ -1,4 +1,4 @@
-# Makefile for Sloth
+# Makefile for Sloth app
 
 XCODE_PROJ := "Sloth.xcodeproj"
 BUILD_DIR := "products"
@@ -21,7 +21,7 @@ build_unsigned:
 	xcodebuild  -parallelizeTargets \
 	            -project "$(XCODE_PROJ)" \
 	            -target "$(APP_NAME)" \
-	            -configuration "Release" \
+	            -configuration "Debug" \
 	            CONFIGURATION_BUILD_DIR="$(BUILD_DIR)" \
 	            CODE_SIGN_IDENTITY="" \
 	            CODE_SIGNING_REQUIRED=NO \
@@ -38,10 +38,10 @@ build_signed:
 
 archives:
 	@echo "Creating application archive ${APP_ZIP_NAME}..."
-	@cd $(BUILD_DIR); zip -q --symlinks $(APP_ZIP_NAME) -r $(APP_BUNDLE_NAME)
+	@cd $(BUILD_DIR); zip -qy --symlinks $(APP_ZIP_NAME) -r $(APP_BUNDLE_NAME)
 
 	@echo "Creating source archive ${APP_SRC_ZIP_NAME}..."
-	@cd $(BUILD_DIR); zip -q --symlinks -r "${APP_SRC_ZIP_NAME}" ".." -x \*.git\* -x \*.zip\* -x \*.DS_Store\* -x \*dsa_priv.pem\* -x \*Sparkle/dsa_priv.pem\* -x \*products/\* -x \*build/\* -x \*xcuserdata\*
+	@cd $(BUILD_DIR); zip -qy --symlinks -r "${APP_SRC_ZIP_NAME}" ".." -x \*.git\* -x \*.zip\* -x \*.DS_Store\* -x \*dsa_priv.pem\* -x \*Sparkle/dsa_priv.pem\* -x \*products/\* -x \*build/\* -x \*xcuserdata\*
 
 	@echo "Generating Sparkle DSA signature"
 	@cd $(BUILD_DIR); ruby ../sparkle/sign_update.rb $(APP_ZIP_NAME) "../sparkle/dsa_priv.pem"
