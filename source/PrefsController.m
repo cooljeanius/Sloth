@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2023, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -127,7 +127,10 @@
     return [filters count];
 }
 
-- (void)tableView:(NSTableView *)tableView setObjectValue:(id)value forTableColumn:(NSTableColumn *)column row:(NSInteger)row {
+- (void)tableView:(NSTableView *)tableView
+   setObjectValue:(id)value
+   forTableColumn:(NSTableColumn *)column
+              row:(NSInteger)row {
     if ([[column identifier] isEqualToString:@"1"]) {
         [filters objectAtIndex:row][0] = @(![[filters objectAtIndex:row][0] boolValue]);
     } else {

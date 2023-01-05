@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2023, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -112,7 +112,9 @@
         || [path isEqualToString:EMPTY_PLACEHOLDER]) {
         [self.pathTextField setStringValue:path];
     } else {
-        NSAttributedString *redPath = [[NSAttributedString alloc] initWithString:path attributes:@{ NSForegroundColorAttributeName : [NSColor redColor] }];
+        NSDictionary *attrs = @{ NSForegroundColorAttributeName : [NSColor redColor] };
+        NSAttributedString *redPath = [[NSAttributedString alloc] initWithString:path
+                                                                      attributes:attrs];
         [self.pathTextField setAttributedStringValue:redPath];
     }
     

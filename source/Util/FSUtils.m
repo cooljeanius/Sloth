@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2023, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -34,7 +34,7 @@
 #import <sys/param.h>
 #import <sys/mount.h>
 
-#define MAX_FILESYSTEMS 128
+#define MAX_FILESYSTEMS 256
 
 @implementation FSUtils
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2023, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -50,7 +50,7 @@
         return NO;
     }
     NSString *fileType = [[NSWorkspace sharedWorkspace] typeOfFile:bundlePath error:nil];
-    return ([[NSWorkspace sharedWorkspace] type:fileType conformsToType:@"com.apple.application"]);
+    return [[NSWorkspace sharedWorkspace] type:fileType conformsToType:@"com.apple.application"];
 }
 
 + (NSString *)identifierForBundleAtPath:(NSString *)path {
@@ -93,6 +93,9 @@
     return [NSString stringWithCString:pw->pw_name encoding:NSUTF8StringEncoding];
 }
 
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic push
+
 + (NSString *)macProcessNameForPID:(pid_t)pid {
     ProcessSerialNumber psn;
     if (GetProcessForPID(pid, &psn) == noErr) {
@@ -116,6 +119,9 @@
     }
     return nil;
 }
+
+#pragma clang diagnostic pop
+
 
 // This function returns process name truncated to 32 characters
 // This is a limitation with libproc on Mac OS X

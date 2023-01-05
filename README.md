@@ -1,5 +1,6 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Language](https://img.shields.io/badge/language-objective--c-lightgrey)]()
+[![Release](https://shields.io/github/v/release/sveinbjornt/sloth?display_name=tag)]()
 [![Build](https://github.com/sveinbjornt/sloth/actions/workflows/macos.yml/badge.svg)]()
 
 # Sloth
@@ -18,7 +19,7 @@
 * In-app authentication to run with root privileges
 * Very fast, responsive native app written in Objective-C/Cocoa
 
-Sloth is essentially a friendly, exploratory graphical user interface built on top of the  [`lsof`](https://en.wikipedia.org/wiki/Lsof) command line tool. The output of `lsof` is parsed and shown in a searchable, filterable outline view with all sorts of convenient additional functionality. Check out the screenshots below.
+Sloth is essentially a friendly, exploratory graphical user interface built on top of the  [`lsof`](https://en.wikipedia.org/wiki/Lsof) command line tool. The output of `lsof` is parsed and shown in a sortable, searchable outline view with all sorts of convenient additional functionality. Check out the screenshots below.
 
 ## Download
 
@@ -27,9 +28,9 @@ Sloth is essentially a friendly, exploratory graphical user interface built on t
 Sloth is free, open source software and has been continuously developed and maintained for a very long time (since 2004).
 **If you find this program useful, please [make a donation](https://sveinbjorn.org/donations).**
 
-*  **[⇩ Download Sloth 3.1](https://sveinbjorn.org/files/software/sloth.zip)** (~1.2 MB, Universal ARM/Intel 64-bit, macOS 10.9 or later)
+*  **[⇩ Download Sloth 3.2](https://sveinbjorn.org/files/software/sloth.zip)** (~1.3 MB, Universal ARM/Intel 64-bit, macOS 10.9 or later)
 
-Sloth can also be installed via [Homebrew](https://brew.sh) (may not be latest version):
+Sloth can also be installed via [Homebrew](https://brew.sh) (may not be the latest version):
 
 ```shell
 $ brew install --cask sloth
@@ -46,13 +47,13 @@ Old versions supporting macOS 10.8 and earlier can be downloaded [here](https://
 <img src="resources/sloth_screenshot1.jpg" align="center" alt="Sloth Screenshot 1 - Files">
 </a>
 
-#### IPv4/IPv6 sockets
+#### View IP sockets
 
 <a href="resources/sloth_screenshot2.jpg">
 <img src="resources/sloth_screenshot2.jpg" align="center" alt="Sloth Screenshot 2 - IP Sockets">
 </a>
 
-#### Sockets and pipes between processes
+#### View sockets and pipes between processes
 
 <a href="resources/sloth_screenshot3.jpg">
 <img src="resources/sloth_screenshot3.jpg" align="center" alt="Sloth Screenshot 3 - Pipes and Unix Sockets">
@@ -69,6 +70,10 @@ make
 Built products are created in `products/`.
 
 ## Version history
+
+### 30/01/2022 - Version 3.2
+
+* Various minor bug fixes and interface refinements
 
 ### 18/03/2021 - Version 3.1
 
@@ -256,7 +261,7 @@ Built products are created in `products/`.
 
 ## BSD License 
 
-Copyright (C) 2004-2021 Sveinbjorn Thordarson &lt;<a href="mailto:">sveinbjorn@sveinbjorn.org</a>&gt;
+Copyright (c) 2004-2023 Sveinbjorn Thordarson &lt;<a href="mailto:">sveinbjorn@sveinbjorn.org</a>&gt;
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:

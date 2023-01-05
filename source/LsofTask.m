@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2023, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -86,9 +86,11 @@
     //    au                                    // access mode
     //    tCHR                                  // type
     //    n/dev/null                            // name / path
-    //    ...
+    //    etc...
+    //
     // We parse this into an array of processes, each of which has children.
     // Each child is a dictionary containing file/socket info.
+    
     DLog(@"Parsing lsof output");
     NSMutableArray *processList = [NSMutableArray new];
     *numFiles = 0;
@@ -251,7 +253,7 @@
                 }
                 
                 if ([currentFile[@"name"] hasPrefix:@"unknown file type:"]) {
-                    currentFile[@"image"] = [IconUtils imageNamed:@"Error"];
+                    currentFile[@"image"] = [IconUtils imageNamed:@"QuestionMark"];
                 }
             }
                 break;

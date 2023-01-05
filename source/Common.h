@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2023, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -29,7 +29,7 @@
 */
 
 #define PROGRAM_NAME                @"Sloth"
-#define PROGRAM_VERSION             @"3.1"
+#define PROGRAM_VERSION             @"3.2"
 #define PROGRAM_WEBSITE             @"https://sveinbjorn.org/sloth"
 #define PROGRAM_GITHUB_WEBSITE      @"https://github.com/sveinbjornt/Sloth"
 #define PROGRAM_DONATIONS           @"https://sveinbjorn.org/donations"

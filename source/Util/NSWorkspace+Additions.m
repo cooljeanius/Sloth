@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2003-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2003-2023, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -160,16 +160,15 @@
 #pragma mark -
 
 - (NSString *)kindStringForFile:(NSString *)filePath {
-    CFStringRef kindCFStr = nil;
-    NSString *kindStr = nil;
-    LSCopyKindStringForURL((__bridge CFURLRef)[NSURL fileURLWithPath:filePath], &kindCFStr);
-    if (kindCFStr) {
-        kindStr = [NSString stringWithString:(__bridge NSString *)kindCFStr];
-        CFRelease(kindCFStr);
-    } else {
-        kindStr = @"Unknown";
+    NSURL *url = [NSURL fileURLWithPath:filePath];
+    NSString *type = nil;
+    [url getResourceValue:&type
+                   forKey:NSURLLocalizedTypeDescriptionKey
+                    error:nil];
+    if (type != nil) {
+        return [type localizedCapitalizedString];
     }
-    return kindStr;
+    return @"Unknown";
 }
 
 - (NSString *)UTIForFile:(NSString *)filePath {

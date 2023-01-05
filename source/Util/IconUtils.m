@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2004-2021, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
+    Copyright (c) 2004-2023, Sveinbjorn Thordarson <sveinbjorn@sveinbjorn.org>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification,
@@ -34,14 +34,14 @@
 #define CORE_TYPES_RESOURCE(X) \
 [NSString stringWithFormat:@"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/%@",(X)]
 
-#define EXEC_ICON_PATH      CORE_TYPES_RESOURCE(@"ExecutableBinaryIcon.icns")
-#define NETWORK_ICON_PATH   CORE_TYPES_RESOURCE(@"SidebarNetwork.icns")
-#define FILE_ICON_PATH      CORE_TYPES_RESOURCE(@"SidebarGenericFile.icns")
-#define FOLDER_ICON_PATH    CORE_TYPES_RESOURCE(@"SidebarGenericFolder.icns")
-#define APPL_ICON_PATH      CORE_TYPES_RESOURCE(@"SidebarApplicationsFolder.icns")
-#define HOME_ICON_PATH      CORE_TYPES_RESOURCE(@"SidebarHomeFolder.icns")
-#define ERR_ICON_PATH       CORE_TYPES_RESOURCE(@"AlertStopIcon.icns")
-#define QUESTION_ICON_PATH  CORE_TYPES_RESOURCE(@"GenericQuestionMarkIcon.icns")
+#define EXEC_ICON_PATH          CORE_TYPES_RESOURCE(@"ExecutableBinaryIcon.icns")
+#define NETWORK_ICON_PATH       CORE_TYPES_RESOURCE(@"SidebarNetwork.icns")
+#define FILE_ICON_PATH          CORE_TYPES_RESOURCE(@"SidebarGenericFile.icns")
+#define FOLDER_ICON_PATH        CORE_TYPES_RESOURCE(@"SidebarGenericFolder.icns")
+#define APPL_ICON_PATH          CORE_TYPES_RESOURCE(@"SidebarApplicationsFolder.icns")
+#define HOME_ICON_PATH          CORE_TYPES_RESOURCE(@"SidebarHomeFolder.icns")
+#define ERR_ICON_PATH           CORE_TYPES_RESOURCE(@"AlertStopIcon.icns")
+#define QUESTIONMARK_ICON_PATH  CORE_TYPES_RESOURCE(@"GenericQuestionMarkIcon.icns")
 
 static NSMutableDictionary *iconStore;
 
@@ -71,6 +71,7 @@ static NSMutableDictionary *iconStore;
             @{ @"name": NSImageNameFolder, @"template": @NO }
         ],
         @"Character Device": @[
+            @{ @"name": @"Cog", @"template": @YES },
             @{ @"name": NSImageNameActionTemplate, @"template": @YES },
             @{ @"name": NSImageNameSmartBadgeTemplate, @"template": @YES }
         ],
@@ -111,11 +112,16 @@ static NSMutableDictionary *iconStore;
         @"Unlocked": @[
             @{ @"type": NSFileTypeForHFSTypeCode(kUnlockedIcon), @"template": @NO }
         ],
-        // TODO:: Add fallback local icon
-        @"QustionMark": @[
-            @{ @"path": QUESTION_ICON_PATH
-            }
-        ]
+        @"QuestionMark": @[
+            @{ @"name": @"QuestionMark", @"template": @YES },
+            @{ @"path": QUESTIONMARK_ICON_PATH, @"template": @NO }
+        ],
+        @"Dollar": @[
+            @{ @"name": @"Dollar", @"template": @YES }
+        ],
+        @"GitHub": @[
+            @{ @"name": @"GitHub", @"template": @YES }
+        ],
     };
     
     for (NSString *name in iconSettings) {
