@@ -120,7 +120,7 @@
     [[window standardWindowButton:NSWindowDocumentIconButton] setImage:[NSApp applicationIconImage]];
     
     // Hide Authenticate button & menu item if AuthorizationExecuteWithPrivileges
-    // function is not available in this version of Mac OS X
+    // function is not available in this version of macOS
     if ([STPrivilegedTask authorizationFunctionAvailable]) {
         NSImage *lockIcon = [IconUtils imageNamed:@"Locked"];
         [authenticateButton setImage:lockIcon];
@@ -734,7 +734,6 @@
     
     // Write to pasteboard
     NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-    [pasteBoard clearContents];
     
     NSMutableArray *names = [NSMutableArray new];
     NSMutableArray *filePaths = [NSMutableArray new];
@@ -752,6 +751,7 @@
     }];
     
     if ([filePaths count]) {
+        [pasteBoard clearContents];
         [pasteBoard declareTypes:@[NSFilenamesPboardType] owner:nil];
         [pasteBoard setPropertyList:filePaths forType:NSFilenamesPboardType];
     }
@@ -764,7 +764,6 @@
     Item *item = [[outlineView itemAtRow:rowNumber] representedObject];
     
     BOOL cmdKeyDown = (([[NSApp currentEvent] modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask);
-    
     if (cmdKeyDown) {
         [self revealItemInFinder:item];
     } else {
