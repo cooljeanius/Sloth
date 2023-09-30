@@ -458,7 +458,6 @@
         DLog(@"Adding regex: %@", ps[1]);
     }
     
-    
     BOOL hasSearchFilter = ([searchFilters count] > 0);
     BOOL hasPrefsFilter = ([prefsFilters count] > 0);
     BOOL showAllProcessTypes = !showApplicationsOnly;
@@ -1011,7 +1010,7 @@
         if (canReveal || hasBundlePath) {
             NSString *path = item[@"path"] != nil ? item[@"path"] : item[@"name"];
             [pathControl setURL:[NSURL fileURLWithPath:path]];
-            //[pathControl setURL:nil];
+            //[pathControl sxetURL:nil];
         } else {
             [pathControl setURL:nil];
         }
