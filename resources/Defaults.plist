@@ -44,5 +44,9 @@
 	<integer>0</integer>
 	<key>accessMode</key>
 	<string>Any</string>
+	<key>showPathBar</key>
+	<true/>
+	<key>alwaysUseSigkill</key>
+	<false/>
 </dict>
 </plist>

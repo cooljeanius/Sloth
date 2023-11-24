@@ -183,7 +183,8 @@
                             @"interfaceSize",
                             @"searchFilterCaseSensitive",
                             @"searchFilterRegex",
-                            @"updateInterval"
+                            @"updateInterval",
+                            @"showPathBar"
                           ]) {
         [[NSUserDefaultsController sharedUserDefaultsController] addObserver:self
                                                                   forKeyPath:VALUES_KEYPATH(key)
@@ -198,6 +199,7 @@
     
     [self updateDiscloseControl];
     [self updateSorting];
+    [self updatePathControl];
     
     if ([DEFAULTS boolForKey:@"authenticateOnLaunch"]) {
         [self toggleAuthentication:self]; // Triggers refresh
@@ -363,6 +365,10 @@
     }
     if ([VALUES_KEYPATH(@"updateInterval") isEqualToString:keyPath]) {
         [self setUpdateTimerFromDefaults];
+        return;
+    }
+    if ([VALUES_KEYPATH(@"showPathBar") isEqualToString:keyPath]) {
+        [self updatePathControl];
         return;
     }
     // The default that changed was one of the filters
@@ -640,18 +646,24 @@
     int pid = [item[@"pid"] intValue];
     
     // Confirm
-    BOOL optionKeyDown = (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask);
+    BOOL optionKeyDown = (([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagOption) == NSEventModifierFlagOption);
+    BOOL ctrlKeyDown = (([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagControl) == NSEventModifierFlagControl);
+    BOOL useSigKill = (ctrlKeyDown || [DEFAULTS boolForKey:@"alwaysUseSigkill"]);
     if (optionKeyDown == NO) {
-        if ([Alerts proceedAlert:[NSString stringWithFormat:@"Are you sure you want to kill “%@” (%d)?", item[@"pname"], pid]
-                         subText:@"This will send the process a SIGKILL signal. Hold the option key (⌥) to avoid this prompt."
-                 withActionNamed:@"Kill"] == NO) {
+        NSString *p = [NSString stringWithFormat:@"Are you sure you want to kill “%@” (%d)?", item[@"pname"], pid];
+        NSString *s = @"This will send the process a SIGTERM signal. Hold the down option key (⌥) to avoid this prompt. Hold down the Control key if you want to send a SIGKILL signal.";
+        if (useSigKill) {
+            s = @"This will send the process a SIGKILL signal. Hold the down option key (⌥) to avoid this prompt.";
+        }
+        if ([Alerts proceedAlert:p subText:s withActionNamed:@"Kill"] == NO) {
             return;
         }
     }
 
     // Kill it
     BOOL ownsProcess = [ProcessUtils isProcessOwnedByCurrentUser:pid];
-    if ([ProcessUtils killProcess:pid asRoot:!ownsProcess] == NO) {
+    BOOL killSuccess = [ProcessUtils killProcess:pid asRoot:!ownsProcess usingSIGKILL:useSigKill];
+    if (killSuccess == NO) {
         [Alerts alert:@"Failed to kill process"
         subTextFormat:@"Could not kill process %@ (PID: %d)", item[@"pname"], pid];
         return;
@@ -687,7 +699,7 @@
     NSDictionary *item = [[outlineView itemAtRow:selectedRow] representedObject];
     NSString *path = item[@"path"] ? item[@"path"] : item[@"name"];
     
-    BOOL optionKeyDown = (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask);
+    BOOL optionKeyDown = (([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagOption) == NSEventModifierFlagOption);
     if (!optionKeyDown) {
         // Ask user to confirm
         NSString *prompt = @"This will tell the Finder to move the specified file into your Trash folder. \
@@ -764,7 +776,7 @@
     NSInteger rowNumber = [outlineView clickedRow];
     Item *item = [[outlineView itemAtRow:rowNumber] representedObject];
     
-    BOOL cmdKeyDown = (([[NSApp currentEvent] modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask);
+    BOOL cmdKeyDown = (([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagCommand) == NSEventModifierFlagCommand);
     if (cmdKeyDown) {
         [self revealItemInFinder:item];
     } else {
@@ -1006,14 +1018,6 @@
             item[@"displayname"] = [[NSAttributedString alloc] initWithString:item[@"name"]
                                                                    attributes:@{NSForegroundColorAttributeName: color}];
         }
-        // Update path shown in path control
-        if (canReveal || hasBundlePath) {
-            NSString *path = item[@"path"] != nil ? item[@"path"] : item[@"name"];
-            [pathControl setURL:[NSURL fileURLWithPath:path]];
-            //[pathControl sxetURL:nil];
-        } else {
-            [pathControl setURL:nil];
-        }
     } else {
         [revealButton setEnabled:NO];
         [killButton setEnabled:NO];
@@ -1022,6 +1026,7 @@
             [[infoPanelController window] orderOut:self];
         }
     }
+    [self updatePathControl];
 }
 
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item {
@@ -1044,6 +1049,78 @@
     
     return YES;
 }
+
+#pragma mark - Path Control
+
+- (void)updatePathControl {
+    NSDictionary *item = nil;
+    NSInteger selectedRow = [outlineView selectedRow];
+    if (selectedRow >= 0) {
+        item = [[outlineView itemAtRow:selectedRow] representedObject];
+    }
+    
+    if (item == nil) {
+        [pathControl setURL:nil];
+    }
+    else {
+        BOOL canReveal = [WORKSPACE canRevealFileAtPath:item[@"name"]];
+        BOOL hasBundlePath = [WORKSPACE canRevealFileAtPath:item[@"path"]];
+        
+        if (canReveal || hasBundlePath) {
+            NSString *path = item[@"path"] != nil ? item[@"path"] : item[@"name"];
+            [pathControl setURL:[NSURL fileURLWithPath:path]];
+        } else {
+            [pathControl setURL:nil];
+        }
+    }
+    
+    BOOL showBar = [DEFAULTS boolForKey:@"showPathBar"] && [pathControl URL] != nil;
+    if (showBar == NO) {
+        [self hidePathControl];
+    } else {
+        [self showPathControl];
+    }
+}
+
+- (void)hidePathControl {
+    if ([pathControl isHidden] == YES) {
+        return;
+    }
+    [pathControl setHidden:YES];
+    NSView *v = [[outlineView superview] superview];
+    NSRect r = [v frame];
+    r.size.height += 36;
+    r.origin.y -= 36;
+    [v setFrame:r];
+}
+
+- (void)showPathControl {
+    if ([pathControl isHidden] == NO) {
+        return;
+    }
+    [pathControl setHidden:NO];
+    NSView *v = [[outlineView superview] superview];
+    NSRect r = [v frame];
+    r.size.height -= 36;
+    r.origin.y += 36;
+    [v setFrame:r];
+}
+
+- (BOOL)pathControl:(NSPathControl *)pathControl shouldDragItem:(NSPathControlItem *)pathItem withPasteboard:(NSPasteboard *)pboard {
+    NSString *draggedFile = [[pathItem URL] path];
+    [self copyFiles:@[draggedFile] toPasteboard:pboard];
+    return YES;
+}
+
+- (void)copyFiles:(NSArray *)files toPasteboard:(NSPasteboard *)pboard {
+    [pboard clearContents];
+    [pboard declareTypes:@[NSFilenamesPboardType] owner:nil];
+    [pboard setPropertyList:files forType:NSFilenamesPboardType];
+    
+    NSString *strRep = [files componentsJoinedByString:@"\n"];
+    [pboard setString:strRep forType:NSStringPboardType];
+}
+
 
 #pragma mark - Menus
 
